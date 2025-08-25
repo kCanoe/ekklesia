@@ -1,21 +1,59 @@
 package com.kcanoe.ekklesia
 
-import io.ktor.server.application.Application
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import com.kcanoe.ekklesia.api.greet
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.install
+import io.ktor.server.engine.EmbeddedServer
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.http.content.LocalPathContent
+import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
+import java.nio.file.Path
 
-fun main() {
+fun Routing.pageRoutes() {
+    route("/") {
+        get {
+            val filePath = Path.of("./src/main/resources/site/index.html")
+            call.respond(LocalPathContent(filePath))
+        }
+        get("/styles.css") {
+            val filePath = Path.of("./src/main/resources/site/styles.css")
+            call.respond(LocalPathContent(filePath))
+        }
+    }
+}
+
+fun Routing.apiRoutes() {
+    route("/api") {
+        get("/test") {
+            val responseView = greet()
+            call.respond(responseView)
+        }
+    }
+}
+
+fun createServer(): EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration> =
     embeddedServer(
         Netty,
         port = 8080,
         host = "127.0.0.1"
     ) {
-        routing {
-            get("/") {
-                call.respondText("Hello, Ktor!")
-            }
+        install(ContentNegotiation) {
+            json()
         }
-    }.start(wait = true)
+        routing {
+            pageRoutes()
+            apiRoutes()
+        }
+    }
+
+fun main() {
+    val server = createServer()
+    server.start(wait = true)
 }
