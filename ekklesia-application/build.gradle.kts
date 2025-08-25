@@ -11,6 +11,13 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+
+    val ktorVersion = "3.2.3"
+
+    implementation("io.ktor:ktor-server-core:${ktorVersion}")
+    implementation("io.ktor:ktor-server-netty:${ktorVersion}")
+
+    implementation("io.ktor:ktor-serialization-kotlinx-json:${ktorVersion}")
 }
 
 tasks.test {
