@@ -2,11 +2,15 @@ package com.kcanoe.ekklesia
 
 import com.kcanoe.ekklesia.api.greet
 import com.kcanoe.ekklesia.api.measures
+import com.zaxxer.hikari.HikariDataSource
+import io.github.cdimascio.dotenv.dotenv
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.Application
 import io.ktor.server.application.install
+import io.ktor.server.application.log
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.http.content.LocalPathContent
@@ -19,12 +23,38 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import io.ktor.util.AttributeKey
 import java.nio.file.Path
 import kotlin.time.ExperimentalTime
 
 object AssetPaths {
     const val INDEX_PATH: String = "./src/main/resources/site/index.html"
     const val STYLES_PATH: String = "./src/main/resources/site/styles.css"
+}
+
+object DbItems {
+    val dotenv = dotenv()
+
+    val url: String = dotenv["DB_URL"] ?: ""
+    val user: String = dotenv["DB_USER"] ?: ""
+    val password: String = dotenv["DB_PASSWORD"] ?: ""
+
+    val dbPoolKey = AttributeKey<HikariDataSource>("DB Connection Pool Key")
+}
+
+fun Application.module() {
+    if (DbItems.url.isEmpty() || DbItems.user.isEmpty() || DbItems.password.isEmpty()) {
+        throw IllegalStateException("Missing an environment variable for DB.")
+    }
+
+    val dbPool = HikariDataSource().apply {
+        jdbcUrl = DbItems.url
+        username = DbItems.user
+        password = DbItems.password
+    }
+
+    attributes.put(DbItems.dbPoolKey, dbPool)
+    log.info("Successfully initialized DB connection pool.")
 }
 
 fun Routing.pageRoutes() {
@@ -77,5 +107,9 @@ fun createServer(): EmbeddedServer<NettyApplicationEngine, NettyApplicationEngin
 
 fun main() {
     val server = createServer()
+    server.application.module()
     server.start(wait = true)
+
+    val dbPool = server.application.attributes[DbItems.dbPoolKey]
+    dbPool.close()
 }

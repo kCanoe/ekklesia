@@ -29,6 +29,18 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
+
+    val postgresVersion = "42.7.7"
+
+    implementation("org.postgresql:postgresql:$postgresVersion")
+
+    val hikariVersion = "7.0.2"
+
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+
+    val dotenvVersion = "6.5.1"
+
+    implementation("io.github.cdimascio:dotenv-kotlin:$dotenvVersion")
 }
 
 tasks.test {
