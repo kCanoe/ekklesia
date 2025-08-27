@@ -16,14 +16,19 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import java.nio.file.Path
 
+object AssetPaths {
+    const val INDEX_PATH: String = "./src/main/resources/site/index.html"
+    const val STYLES_PATH: String = "./src/main/resources/site/styles.css"
+}
+
 fun Routing.pageRoutes() {
     route("/") {
         get {
-            val filePath = Path.of("./src/main/resources/site/index.html")
+            val filePath = Path.of(AssetPaths.INDEX_PATH)
             call.respond(LocalPathContent(filePath))
         }
         get("/styles.css") {
-            val filePath = Path.of("./src/main/resources/site/styles.css")
+            val filePath = Path.of(AssetPaths.STYLES_PATH)
             call.respond(LocalPathContent(filePath))
         }
     }
