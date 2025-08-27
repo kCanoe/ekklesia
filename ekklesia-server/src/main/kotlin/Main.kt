@@ -1,6 +1,9 @@
 package com.kcanoe.ekklesia
 
 import com.kcanoe.ekklesia.api.greet
+import com.kcanoe.ekklesia.api.measures
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.install
 import io.ktor.server.engine.EmbeddedServer
@@ -9,12 +12,14 @@ import io.ktor.server.http.content.LocalPathContent
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import java.nio.file.Path
+import kotlin.time.ExperimentalTime
 
 object AssetPaths {
     const val INDEX_PATH: String = "./src/main/resources/site/index.html"
@@ -34,11 +39,16 @@ fun Routing.pageRoutes() {
     }
 }
 
+@OptIn(ExperimentalTime::class)
 fun Routing.apiRoutes() {
     route("/api") {
-        get("/test") {
+        get("/greet") {
             val responseView = greet()
             call.respond(responseView)
+        }
+        get("/measures") {
+            val measures = measures()
+            call.respond(measures)
         }
     }
 }
@@ -51,6 +61,12 @@ fun createServer(): EmbeddedServer<NettyApplicationEngine, NettyApplicationEngin
     ) {
         install(ContentNegotiation) {
             json()
+        }
+        install(CORS) {
+            allowHost("localhost:5173")
+            allowHeader(HttpHeaders.ContentType)
+            allowHeader(HttpHeaders.Accept)
+            allowMethod(HttpMethod.Get)
         }
         routing {
             pageRoutes()

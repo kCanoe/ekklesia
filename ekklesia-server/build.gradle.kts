@@ -1,5 +1,3 @@
-import kotlin.math.log
-
 plugins {
     kotlin("jvm") version "2.1.20"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.20"
@@ -29,6 +27,8 @@ dependencies {
 
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+
+    implementation("io.ktor:ktor-server-cors:$ktorVersion")
 }
 
 tasks.test {
