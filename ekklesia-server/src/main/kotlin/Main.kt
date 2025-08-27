@@ -4,6 +4,7 @@ import com.kcanoe.ekklesia.api.greet
 import com.kcanoe.ekklesia.api.measures
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.install
 import io.ktor.server.engine.EmbeddedServer
@@ -30,11 +31,11 @@ fun Routing.pageRoutes() {
     route("/") {
         get {
             val filePath = Path.of(AssetPaths.INDEX_PATH)
-            call.respond(LocalPathContent(filePath))
+            call.respond(HttpStatusCode.OK, LocalPathContent(filePath))
         }
         get("/styles.css") {
             val filePath = Path.of(AssetPaths.STYLES_PATH)
-            call.respond(LocalPathContent(filePath))
+            call.respond(HttpStatusCode.OK, LocalPathContent(filePath))
         }
     }
 }
@@ -44,11 +45,11 @@ fun Routing.apiRoutes() {
     route("/api") {
         get("/greet") {
             val responseView = greet()
-            call.respond(responseView)
+            call.respond(HttpStatusCode.OK, responseView)
         }
         get("/measures") {
             val measures = measures()
-            call.respond(measures)
+            call.respond(HttpStatusCode.OK, measures)
         }
     }
 }

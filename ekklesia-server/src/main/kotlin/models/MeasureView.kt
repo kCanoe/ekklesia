@@ -2,6 +2,7 @@ package com.kcanoe.ekklesia.models
 
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -28,7 +29,7 @@ H.Rpt.	Report issued by a House of Representatives or conference committee, usua
 */
 
 @Suppress("unused")
-@Serializable
+@Serializable(with = MeasureOrigin.MeasureOriginSerializer::class)
 enum class MeasureOrigin(val abbreviation: String) {
     SENATE_BILL("S."),
     HOUSE_BILL("H.R."),
@@ -42,11 +43,27 @@ enum class MeasureOrigin(val abbreviation: String) {
     STATUTES_AT_LARGE("Stat."),
     UNITED_STATES_CODE("U.S. Code"),
     SENATE_REPORT("S.Rpt."),
-    HOUSE_REPORT("H.Rpt.")
+    HOUSE_REPORT("H.Rpt.");
+
+    companion object MeasureOriginSerializer : KSerializer<MeasureOrigin> {
+        private val originsMap = MeasureOrigin.entries.associateBy(MeasureOrigin::abbreviation)
+
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor("MeasureOrigin", PrimitiveKind.STRING)
+
+        override fun serialize(encoder: Encoder, value: MeasureOrigin) {
+            encoder.encodeString(value.abbreviation)
+        }
+
+        override fun deserialize(decoder: Decoder): MeasureOrigin {
+            val status = decoder.decodeString()
+            return originsMap[status] ?: HOUSE_BILL
+        }
+    }
 }
 
 @Suppress("unused")
-@Serializable
+@Serializable(with = MeasureSubject.MeasureSubjectSerializer::class)
 enum class MeasureSubject(val subject: String) {
     TAXES("Taxes"),
     HEALTH("Health"),
@@ -62,11 +79,27 @@ enum class MeasureSubject(val subject: String) {
     ENVIRONMENT("Environment"),
     VETERANS("Veterans"),
     AGRICULTURE("Agriculture"),
-    JUDICIARY("Judiciary")
+    JUDICIARY("Judiciary");
+
+    companion object MeasureSubjectSerializer : KSerializer<MeasureSubject> {
+        private val subjectsMap = MeasureSubject.entries.associateBy(MeasureSubject::subject)
+
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor("MeasureSubject", PrimitiveKind.STRING)
+
+        override fun serialize(encoder: Encoder, value: MeasureSubject) {
+            encoder.encodeString(value.subject)
+        }
+
+        override fun deserialize(decoder: Decoder): MeasureSubject {
+            val status = decoder.decodeString()
+            return subjectsMap[status] ?: BUDGET
+        }
+    }
 }
 
 @Suppress("unused")
-@Serializable
+@Serializable(with = MeasureStatus.MeasureStatusSerializer::class)
 enum class MeasureStatus(val status: String) {
     INTRODUCED("Introduced"),
     REFERRED_TO_COMMITTEE("Referred to Committee"),
@@ -74,7 +107,23 @@ enum class MeasureStatus(val status: String) {
     PASSED_CHAMBER("Passed Chamber"),
     VETOED("Vetoed"),
     BECAME_LAW("Became Law"),
-    DIED_IN_COMMITTEE("Died in Committee")
+    DIED_IN_COMMITTEE("Died in Committee");
+
+    companion object MeasureStatusSerializer : KSerializer<MeasureStatus> {
+        private val statusesMap = entries.associateBy(MeasureStatus::status)
+
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor("MeasureStatus", PrimitiveKind.STRING)
+
+        override fun serialize(encoder: Encoder, value: MeasureStatus) {
+            encoder.encodeString(value.status)
+        }
+
+        override fun deserialize(decoder: Decoder): MeasureStatus {
+            val status = decoder.decodeString()
+            return statusesMap[status] ?: INTRODUCED
+        }
+    }
 }
 
 @JvmInline
@@ -84,7 +133,7 @@ value class IntroductionDate(val value: String) {
     constructor(date: Instant) : this (
         date.toString()
     )
-    object IntroductionDateSerializer : kotlinx.serialization.KSerializer<IntroductionDate> {
+    object IntroductionDateSerializer : KSerializer<IntroductionDate> {
         override val descriptor: SerialDescriptor =
             PrimitiveSerialDescriptor("IntroductionDate", PrimitiveKind.STRING)
 
